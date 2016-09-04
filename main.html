@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+
+    <script type="text/javascript">
+  const electron=require('electron')
+      var server=require('./server.js')
+      var util=require('./util.js')
+      var client=require('./client.js')
+      var path;
+      var dialog=electron.remote.dialog
+      var getFile=function () {
+        path=dialog.showOpenDialog({properties: ['openFile']})
+        path=path[0]
+      }
+      var client;
+
+
+
+function send() {
+  server.init(path,document.getElementById('ip').value,function (client) {
+    server.fileInfo(function (info) {
+       server.writer(client,info)
+       server.streamReader(client,function (data) {
+         //console.log(JSON.parse(data.toString()));
+
+         if(data.ack){
+
+           server.sendFile(client)
+         }else if(data.final) {
+         client.destroy()
+       }
+       })
+    })
+  });
+}
+function recive() {
+client.init(document.getElementById('sendip').value)
+client.handshake()
+}
+    </script>
+  </head>
+  <body>
+  <div id="main">
+   <input type="text" name="name" id="ip" value=""><br>
+   <button type="button" onclick="getFile()">getFile</button><br>
+   <button type="button" name="button" onclick="send()">sendFile</button>
+      <input type="text" name="name" id="sendip" value=""><br>
+       <button type="button" name="button" onclick="recive()">recive</button>
+  </div>
+  </body>
+</html>
